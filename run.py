@@ -3,7 +3,7 @@ import torch
 
 from collections import namedtuple
 
-from load_data import load_california_housing, load_click
+from load_data import load_california_housing
 from preprocessor import Preprocessor
 from model import HONAM
 from utils import set_global_seed, evaluate
