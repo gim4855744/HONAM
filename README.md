@@ -1,14 +1,20 @@
 # Higher-order Neural Additive Models (HONAM)
 
+HONAM is an interpretable deep learning model proposed in our paper:
+[Higher-order Neural Additive Models: An Interpretable Machine Learning Model with Feature Interactions](https://doi.org/10.48550/arXiv.2209.15409).
+
+HONAM consists of two parts: 1) feature networks and 2) a feature interaction module.
+The feature networks make the representation vectors of the corresponding features, and then the feature interaction module makes high-order feature interactions.
+Therefore, HONAM can produce accurate and interpretable predictions.
+
 ## Requirements
 
 We have implemented the code in the following python environment:
-
-* python 3.8.12
-* pytorch 1.10.2
-* pandas 1.2.3
-* numpy 1.21.2
-* scikit-learn 1.0.2
+- python 3.8.12
+- pytorch 1.10.2
+- pandas 1.2.3
+- numpy 1.21.2
+- scikit-learn 1.0.2
 
 ## Quick Start
 
