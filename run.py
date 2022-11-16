@@ -11,7 +11,7 @@ from utils import set_global_seed, evaluate
 parser = argparse.ArgumentParser()
 parser.add_argument("--seed", type=int, help="set the random seed for reproducibility")
 parser.add_argument("--mode", choices=["train", "test"], type=str, required=True, help="choose the run mode")
-parser.add_argument("--dataset", choices=["california_housing", "click"], type=str, required=True, help="dataset name")
+parser.add_argument("--dataset", choices=["california_housing"], type=str, required=True, help="dataset name")
 args = parser.parse_args()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
