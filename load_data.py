@@ -45,17 +45,3 @@ def load_california_housing(
     """
 
     return _load_data(path, test_size, target_column="median_house_value")
-
-def load_click(
-        path: str="./data/click.csv",
-        test_size: float=0.2
-) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-
-    """
-    Load the Click dataset.
-    :param path: dataset path
-    :param test_size: test set ratio
-    :return: train/val/test sets of the Click dataset
-    """
-
-    return _load_data(path, test_size, target_column="target")

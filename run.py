@@ -18,8 +18,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 dataset_info = namedtuple("dataset_info", ["load", "out_size", "task"])
 dataset_map = {
-    "california_housing": dataset_info(load_california_housing, 1, "regression"),
-    "click": dataset_info(load_click, 1, "binary_classification"),
+    "california_housing": dataset_info(load_california_housing, 1, "regression")
 }
 
 def main():
