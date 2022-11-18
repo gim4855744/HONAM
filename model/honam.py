@@ -11,8 +11,15 @@ class HONAM(Module):
 
     def __init__(
         self,
-        num_features: int, out_size: int, task: str, order: int=2,
-        batch_size: int=1024, lr: float=1e-3, epochs: int=1000, num_workers: int=0, verbose=True
+        num_features: int,
+        out_size: int,
+        task: str,
+        order: int=2,
+        batch_size: int=1024,
+        lr: float=1e-3,
+        epochs: int=1000,
+        num_workers: int=0,
+        verbose=True
     ):
 
         super(HONAM, self).__init__()
@@ -59,11 +66,18 @@ class HONAM(Module):
     def fit(self, x_train: np.ndarray, y_train: np.ndarray, x_val: np.ndarray=None, y_val:np.ndarray=None) -> None:
 
         device = next(self.parameters()).device
+        with_val = (x_val is not None and y_val is not None)
+
         x_train = torch.tensor(x_train, dtype=torch.float32)
         y_train = torch.tensor(y_train, dtype=torch.float32)
-
         train_dataset = TensorDataset(x_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers)
+
+        if with_val:
+            x_val = torch.tensor(x_val, dtype=torch.float32)
+            y_val = torch.tensor(y_val, dtype=torch.float32)
+            val_dataset = TensorDataset(x_val, y_val)
+            val_loader = DataLoader(val_dataset, batch_size=self._batch_size, num_workers=self._num_workers)
 
         optimizer = Adam(self.parameters(), lr=self._lr)
         if self._task == "regression":
@@ -71,27 +85,49 @@ class HONAM(Module):
         elif self._task == "binary_classification":
             criterion = BCELoss()
 
-        total_losses, train_step = 0, 0
-
-        self.train()
-
         for epoch in range(self._epochs):
+
+            self.train()
+
+            train_losses, train_step = 0, 0
+            if with_val:
+                val_losses, val_step = 0, 0
 
             for x, y in train_loader:
 
                 x, y = x.to(device), y.to(device)
 
-                optimizer.zero_grad()
                 prediction = self(x)
                 loss = criterion(prediction, y)
+
+                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
-                total_losses += loss.item()
+                train_losses += loss.item()
                 train_step += 1
 
+            if with_val:
+
+                with torch.no_grad():
+
+                    self.eval()
+
+                    for x, y in val_loader:
+
+                        x, y = x.to(device), y.to(device)
+
+                        prediction = self(x)
+                        loss = criterion(prediction, y)
+
+                        val_losses += loss.item()
+                        val_step += 1
+
             if self._verbose:
-                print(epoch, total_losses / train_step)
+                if with_val:
+                    print("Epoch {}, Train Loss: {:.7f}, Val Loss: {:.7f}".format(epoch + 1, train_losses / train_step, val_losses / val_step))
+                else:
+                    print("Epoch {}, Train Loss: {:.7f}".format(epoch + 1, train_losses / train_step))
 
     def predict(self, x: np.ndarray) -> np.ndarray:
 

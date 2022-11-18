@@ -39,7 +39,7 @@ def main():
     # define model
     num_features = x_train.shape[1]
     model = HONAM(num_features=num_features, out_size=dataset.out_size, task=dataset.task, order=2).to(device)
-    model.fit(x_train, y_train)
+    model.fit(x_train, y_train, x_val, y_val)
     prediction = model.predict(x_test)
 
     evaluate(y_test, prediction, task=dataset.task)
