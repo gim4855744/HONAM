@@ -9,12 +9,21 @@ from model import FeatureNet
 
 class HONAM(Module):
 
-    def __init__(self, num_features: int, out_size: int, task: str, order: int=2):
+    def __init__(
+        self,
+        num_features: int, out_size: int, task: str, order: int=2,
+        batch_size: int=1024, lr: float=1e-3, epochs: int=1000, num_workers: int=0, verbose=True
+    ):
 
         super(HONAM, self).__init__()
 
         self._task = task
         self._order = order
+        self._batch_size = batch_size
+        self._lr = lr
+        self._epochs = epochs
+        self._num_workers = num_workers
+        self._verbose = verbose
 
         num_units = [1, 32, 64, 32]
         self._feature_nets = ModuleList([FeatureNet(num_units) for _ in range(num_features)])
@@ -47,20 +56,16 @@ class HONAM(Module):
 
         return prediction
 
-    def fit(
-            self,
-            x_train: np.ndarray, y_train: np.ndarray, x_val: np.ndarray=None, y_val:np.ndarray=None,
-            batch_size: int=1024, lr: float=1e-3, epochs: int=1000, num_workers: int=0, verbose=True
-    ):
+    def fit(self, x_train: np.ndarray, y_train: np.ndarray, x_val: np.ndarray=None, y_val:np.ndarray=None) -> None:
 
         device = next(self.parameters()).device
         x_train = torch.tensor(x_train, dtype=torch.float32)
         y_train = torch.tensor(y_train, dtype=torch.float32)
 
         train_dataset = TensorDataset(x_train, y_train)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+        train_loader = DataLoader(train_dataset, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers)
 
-        optimizer = Adam(self.parameters(), lr=lr)
+        optimizer = Adam(self.parameters(), lr=self._lr)
         if self._task == "regression":
             criterion = MSELoss()
         elif self._task == "binary_classification":
@@ -70,7 +75,7 @@ class HONAM(Module):
 
         self.train()
 
-        for epoch in range(epochs):
+        for epoch in range(self._epochs):
 
             for x, y in train_loader:
 
@@ -85,7 +90,7 @@ class HONAM(Module):
                 total_losses += loss.item()
                 train_step += 1
 
-            if verbose:
+            if self._verbose:
                 print(epoch, total_losses / train_step)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
