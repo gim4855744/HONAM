@@ -18,11 +18,16 @@ We have implemented the code in the following python environment:
 
 ## Quick Start
 
-We provide an example code for the California Housing Prices dataset.
+We provide an example code.
 
 For training:
 ```shell
-python run.py --mode=train --dataset=clifornia_housing
+python run.py --mode=train --dataset=house --seed=0
+```
+
+For test:
+```shell
+python run.py --mode=test --dataset=house --seed=0
 ```
 
 ## Using HONAM in Your Code
@@ -32,10 +37,10 @@ python run.py --mode=train --dataset=clifornia_housing
 HONAM supports sklearn-style interface.
 
 ```python
-from model import HONAM
+from honam.model import HONAM
 
 model = HONAM(...)
-model.fit(x_train, y_train)
+model.fit(x_train, y_train, x_val, y_val)
 prediction = model.predict(x_test) 
 ```
 
