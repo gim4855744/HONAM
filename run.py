@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 from honam.fetchdata import DATASETS
 from honam.preprocessor import Preprocessor
-from honam.model import *
+from honam.models import *
 from honam.utils import set_global_seed, evaluate
 
 parser = argparse.ArgumentParser()
