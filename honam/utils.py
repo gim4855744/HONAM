@@ -1,64 +1,100 @@
-import random
 import pickle
+from typing import Union, Any
 
-import numpy as np
 import torch
+import torchmetrics
+import numpy as np
+from torch.utils.data import TensorDataset, DataLoader
 
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from sklearn.metrics import roc_auc_score, average_precision_score, accuracy_score, f1_score
-from torch.backends import cudnn
+from honam._types import _TASK_INPUT
 
-def set_global_seed(seed: int) -> None:
+__all__ = ['get_loader']
 
+
+def get_loader(
+    x: np.ndarray,
+    y: Union[None, np.ndarray] = None,
+    batch_size: int = 1,
+    shuffle: bool = False,
+    num_workers: int = 0
+) -> DataLoader:
+    
+    """Get torch dataloader.
+
+    Args:
+        x: input features.
+        y: targets. None indicates no target values
+        batch_size: how many samples per batch to load.
+        shuffle: set to True to have the data reshuffled at every epoch.
+        num_workers: how many subprocesses to use for data loading.
+
+    Returns:
+        data loader.
     """
-    Set the global random seed for reproducibility.
-    :param seed: a random seed number
-    """
 
-    cudnn.deterministic = True
-    cudnn.benchmark = False
+    x = torch.tensor(x, dtype=torch.float32)
+    if y is not None:
+        y = torch.tensor(y, dtype=torch.float32)
+        dataset = TensorDataset(x, y)
+    else:
+        dataset = TensorDataset(x)
 
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    loader = DataLoader(dataset, batch_size, shuffle, num_workers=num_workers)
 
-def get_r_squared(y_true: np.ndarray, y_predict: np.ndarray):
-    mean = np.mean(y_true)
-    sst = np.square(y_true - mean).sum()
-    ssr = np.square(y_true - y_predict).sum()
+    return loader
+
+
+def get_r_squared(
+    y_predict: torch.Tensor,
+    y_true: torch.Tensor
+):
+    mean = y_true.mean(dim=0)
+    sst = torch.square(y_true - mean).sum(dim=0)
+    ssr = torch.square(y_true - y_predict).sum(dim=0)
     score = 1 - (ssr / sst)
-    return score
+    return score.mean()
 
-def get_r_absolute(y_true: np.ndarray, y_predict: np.ndarray):
-    mean = np.mean(y_true)
-    sat = np.abs(y_true - mean).sum()
-    sar = np.abs(y_true - y_predict).sum()
+def get_r_absolute(
+    y_predict: torch.Tensor,
+    y_true: torch.Tensor
+):
+    mean = y_true.mean(dim=0)
+    sat = torch.abs(y_true - mean).sum(dim=0)
+    sar = torch.abs(y_true - y_predict).sum(dim=0)
     score = 1 - (sar / sat)
-    return score
+    return score.mean()
 
-def evaluate(y_true: np.ndarray, y_predict: np.ndarray, task: str):
+def evaluate(
+    y_predict: torch.Tensor,
+    y_true: torch.Tensor,
+    task: _TASK_INPUT
+):
     if task == "regression":
         r_squared = get_r_squared(y_true, y_predict)
         r_absolute = get_r_absolute(y_true, y_predict)
-        rmse = np.sqrt(mean_squared_error(y_true, y_predict))
-        mae = mean_absolute_error(y_true, y_predict)
+        rmse = np.sqrt(torchmetrics.functional.mean_squared_error(y_predict, y_true))
+        mae = torchmetrics.functional.mean_absolute_error(y_predict, y_true)
         print("R-squared: {:.7f}, R-absolute: {:.7f}, RMSE: {:.7f}, MAE: {:.7f}".format(r_squared, r_absolute, rmse, mae))
-    elif task == "classification":
-        auroc = roc_auc_score(y_true, y_predict)
-        auprc = average_precision_score(y_true, y_predict)
+    else:
+        auroc = torchmetrics.functional.auroc(y_predict, y_true, task)
+        auprc = torchmetrics.functional.average_precision(y_predict, y_true, task)
         y_predict = (y_predict >= 0.5).astype('int')
-        acc = accuracy_score(y_true, y_predict)
-        f1 = f1_score(y_true, y_predict)
+        acc = torchmetrics.functional.accuracy(y_predict, y_true, task)
+        f1 = torchmetrics.functional.f1_score(y_predict, y_true, task)
         print("AUROC: {:.7f}, AUPRC: {:.7f}, Acc: {:.7f}, F1: {:.7f}".format(auroc, auprc, acc, f1))
 
 
-def save_pickle(obj, path):
-    with open(path, 'wb') as file:
+def save_pickle(
+    obj: Any,
+    path: str
+) -> None:
+    with open(path, mode='wb') as file:
         pickle.dump(obj, file)
 
 
-def load_pickle(path):
-    with open(path, 'rb') as file:
+def load_pickle(
+    path: str
+) -> Any:
+    with open(path, mode='rb') as file:
         obj = pickle.load(file)
     return obj

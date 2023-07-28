@@ -1,89 +1,118 @@
+from typing import Union, List, Tuple
+
+import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import StandardScaler, QuantileTransformer, OrdinalEncoder
+from sklearn.preprocessing import QuantileTransformer, OrdinalEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
+
+from honam._types import _TASK_INPUT
 
 __all__ = ['Preprocessor']
 
 
-class FeatureTransformer:
+class Preprocessor:
 
-    def __init__(self, categorical_features):
+    """Preprocessor for input features and targets.
+
+    Args:
+        categorical_features: list of categorical features names.
+        continuous_features: list of continuous feature names.
+        task: target task name. one of 'reg', 'bincls', and 'multicls'.
+    """
+
+    def __init__(
+        self,
+        categorical_features: Union[None, List[str]],
+        continuous_features: Union[None, List[str]],
+        task: _TASK_INPUT
+    ) -> None:
+        
+        # for categorical features
+        self._ordinal_encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=np.nan)
+        self._categorical_imputer = SimpleImputer(strategy='most_frequent')
+
+        # for continuous features
+        self._continuous_imputer = SimpleImputer(strategy='mean')
+        
+        # for all features
+        self._quantile_transformer = QuantileTransformer(output_distribution='uniform')
+
+        # for targets
+        if task == 'regression':
+            self._target_transformer = StandardScaler()
+        else:
+            self._target_transformer = OrdinalEncoder()
 
         self._categorical_features = categorical_features
+        self._continuous_features = continuous_features
 
-        self._ordinal_encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=np.nan)
-        self._imputer = SimpleImputer(strategy='most_frequent', copy=False)
+    def fit(
+        self,
+        x: pd.DataFrame,
+        y: np.ndarray
+    ) -> Tuple[np.ndarray]:
         
-        self._quantile_transformer = QuantileTransformer(output_distribution='uniform', copy=False)
+        """Fit preprocessor and transform data.
 
-    def fit_transform(self, x):
+        Args:
+            x: input features.
+            y: target values.
 
+        Returns:
+            transformed features and targets.
+        """
+
+        assert len(x.shape) == 2, 'x must be a 2D tensor.'
+        assert len(y.shape) == 1 or len(y.shape) == 2, 'y must be a 1D or 2D tensor.'
+        
         x = x.copy()
+        y = y.copy()
+
+        if len(y.shape) == 1:
+            y = y.reshape(-1, 1)
 
         if self._categorical_features is not None:
             x[self._categorical_features] = self._ordinal_encoder.fit_transform(x[self._categorical_features])
-            x[self._categorical_features] = self._imputer.fit_transform(x[self._categorical_features])
+            x[self._categorical_features] = self._categorical_imputer.fit_transform(x[self._categorical_features])
 
-        # quantile_noise = 1e-3
-        # stds = np.std(x, axis=0, keepdims=True)
-        # noise_std = quantile_noise / np.maximum(stds, quantile_noise)
-        # quantile_x = x + noise_std * np.random.randn(*x.shape)
-        # self._quantile_transformer.fit(quantile_x)
-        # x = self._quantile_transformer.transform(x)
+        if self._continuous_features is not None:
+            x[self._continuous_features] = self._continuous_imputer.fit_transform(x[self._continuous_features])
 
         x = self._quantile_transformer.fit_transform(x)
+        y = self._target_transformer.fit_transform(y)
 
-        return x
-    
-    def transform(self, x):
+        return x, y
 
+    def transform(
+        self,
+        x: pd.DataFrame,
+        y: np.ndarray
+    ) -> Tuple[np.ndarray]:
+        
+        """Transform data.
+
+        Returns:
+            transformed features and targets.
+        """
+        
+        assert len(x.shape) == 2, 'x must be a 2D tensor.'
+        assert len(y.shape) == 1 or len(y.shape) == 2, 'y must be a 1D or 2D tensor.'
+        
         x = x.copy()
+        y = y.copy()
+
+        if len(y.shape) == 1:
+            y = y.reshape(-1, 1)
 
         if self._categorical_features is not None:
             x[self._categorical_features] = self._ordinal_encoder.transform(x[self._categorical_features])
-            x[self._categorical_features] = self._imputer.transform(x[self._categorical_features])
-            
+            x[self._categorical_features] = self._categorical_imputer.transform(x[self._categorical_features])
+
+        if self._continuous_features is not None:
+            x[self._continuous_features] = self._continuous_imputer.transform(x[self._continuous_features])
+
         x = self._quantile_transformer.transform(x)
+        y = self._target_transformer.transform(y)
 
-        return x
-
-
-class TargetTransformer:
-
-    def __init__(self, task):
-        if task == 'regression':
-            self._transformer = StandardScaler()
-        elif task == 'classification':
-            self._transformer = OrdinalEncoder()
-        else:
-            raise ValueError('task must be regression or classification')
-
-    def fit_transform(self, y):
-        if len(y.shape) == 1:
-            y = y.reshape(-1, 1)
-        y = self._transformer.fit_transform(y)
-        return y
-
-    def transform(self, y):
-        if len(y.shape) == 1:
-            y = y.reshape(-1, 1)
-        y = self._transformer.transform(y)
-        return y
-
-
-class Preprocessor:
-
-    def __init__(self, categorical_features, task):
-        self._x_transformer = FeatureTransformer(categorical_features)
-        self._y_transformer = TargetTransformer(task)
-
-    def fit_transform(self, x, y):
-        x = self._x_transformer.fit_transform(x)
-        y = self._y_transformer.fit_transform(y)
-        return x, y
-
-    def transform(self, x, y):
-        x = self._x_transformer.transform(x)
-        y = self._y_transformer.transform(y)
         return x, y

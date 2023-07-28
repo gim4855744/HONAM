@@ -1,15 +1,13 @@
-from typing import List
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from pytorch_lightning import LightningModule
 from torch import Tensor
+
+from honam.models._base import LightningModel
 
 __all__ = ['HONAM']
 
 
-class HONAM(LightningModule):
+class HONAM(LightningModel):
 
     def __init__(
         self,
@@ -23,7 +21,9 @@ class HONAM(LightningModule):
         dropout: float = 0
     ):
 
-        super().__init__()
+        super().__init__(lr, weight_decay)
+
+        self.save_hyperparameters()
 
         layers = []
         curr_dim = 1
@@ -59,13 +59,13 @@ class HONAM(LightningModule):
         self._output_layer = nn.Linear(in_features=order * curr_dim, out_features=n_outputs)
         self._n_features = n_features
         self._order = order
-        self._lr = lr
-        self._weight_decay = weight_decay
 
     def forward(
         self,
         x: Tensor
     ) -> Tensor:
+        
+        x = x.unsqueeze(dim=-1)
         
         x = self._featurenet(x)
 
@@ -87,32 +87,3 @@ class HONAM(LightningModule):
         out = self._output_layer(interactions)
         
         return out
-    
-    def training_step(
-        self,
-        batch: List[Tensor],
-        batch_idx: int
-    ) -> Tensor:
-        x, y = batch
-        y_hat = self(x)
-        loss = F.mse_loss(y_hat, y)
-        self.log('train_loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-        return loss
-    
-    def validation_step(
-        self,
-        batch: List[Tensor],
-        batch_idx: int
-    ) -> Tensor:
-        with torch.no_grad():
-            x, y = batch
-            y_hat = self(x)
-            loss = F.mse_loss(y_hat, y)
-            self.log('val_loss', loss, prog_bar=True, on_step=False, on_epoch=True)
-            return loss
-    
-    def test_step(self):
-        pass
-    
-    def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self._lr, weight_decay=self._weight_decay)

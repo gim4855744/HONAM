@@ -4,7 +4,7 @@ import os
 import torch
 from sklearn.model_selection import train_test_split
 
-from honam.fetchdata import DATASETS
+from honam.fetchdata_legacy import DATASETS
 from honam.preprocessor import Preprocessor
 from honam.models import *
 from honam.utils import set_global_seed, evaluate
