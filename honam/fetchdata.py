@@ -97,7 +97,7 @@ def _download_file_from_google_drive(id, destination):
     save_response_content(response, destination)
 
 
-def fetch_ca_housing(
+def fetch_california_housing(
     path: str = './data/',
     fold: int = 0
 ) -> dict:
@@ -109,40 +109,37 @@ def fetch_ca_housing(
         fold: data fold number.
 
     Returns:
-        data: it contains the following keys
-            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x is a pandas dataframe and y is a numpy array.
-            - 'categorical_features', 'continuous_features': which features are categorical/continuous.
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
             - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
-            - 'n_features': the number of input features.
-            - 'n_outputs': the number of outputs.
     """
 
     assert 0 <= fold <= 4, 'invalid fold number.'
 
-    data_path = pjoin(path, 'cahousing', 'california_housing_prices.csv')
+    dataset_name = 'california_housing'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, f'{dataset_name}.csv')
     if not pexists(data_path):
-        os.makedirs(pjoin(path, 'cahousing'), exist_ok=True)
-        file_id = "1L-mAY0PBJZ7SFEDaAUYfWa4ckJetD-hc"
-        _download_file_from_google_drive(file_id, data_path)
+        os.makedirs(data_dir, exist_ok=True)
+        _download_file_from_google_drive('1L-mAY0PBJZ7SFEDaAUYfWa4ckJetD-hc', data_path)
 
-    categorical_features = ['ocean_proximity']
-    continuous_features = [
-        'longitude', 'latitude', 'housing_median_age', 'total_rooms', 'population', 'households',
-        'median_income'
-    ]
-    targets = ['median_house_value']
-    usecols = categorical_features + continuous_features + targets
+    cat_cols = ['ocean_proximity']
+    num_cols = ['longitude', 'latitude', 'housing_median_age', 'total_rooms', 'population', 'households', 'median_income']
+    target_cols = ['median_house_value']
+    usecols = cat_cols + num_cols + target_cols
 
     df = pd.read_csv(data_path, usecols=usecols)
-    x = df.drop(targets, axis=1)
-    y = df.get(targets).values
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return {
-        'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-        'categorical_features': categorical_features, 'continuous_features': continuous_features,
-        'task': 'regression', 'n_features': len(categorical_features + continuous_features), 'n_outputs': 1
+        'x_train': x_train, 'y_train': y_train,
+        'x_test': x_test, 'y_test': y_test,
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'reg'
     }
 
 
@@ -158,37 +155,37 @@ def fetch_insurance(
         fold: data fold number.
 
     Returns:
-        data: it contains the following keys
-            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x is a pandas dataframe and y is a numpy array.
-            - 'categorical_features', 'continuous_features': which features are categorical/continuous.
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
             - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
-            - 'n_features': the number of input features.
-            - 'n_outputs': the number of outputs.
     """
 
     assert 0 <= fold <= 4, 'invalid fold number.'
 
-    data_path = pjoin(path, 'insurance', 'insurance.csv')
+    dataset_name = 'insurance'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, f'{dataset_name}.csv')
     if not pexists(data_path):
-        os.makedirs(pjoin(path, 'insurance'), exist_ok=True)
-        file_id = "1hhsC8aRXQS-TLqEk9hvKXIW3m3voeaz0"
-        _download_file_from_google_drive(file_id, data_path)
+        os.makedirs(data_dir, exist_ok=True)
+        _download_file_from_google_drive('1hhsC8aRXQS-TLqEk9hvKXIW3m3voeaz0', data_path)
 
-    categorical_features = ['sex', 'smoker', 'region']
-    continuous_features = ['age', 'bmi', 'children']
-    targets = ['charges']
-    usecols = categorical_features + continuous_features + targets
+    cat_cols = ['sex', 'smoker', 'region']
+    num_cols = ['age', 'bmi', 'children']
+    target_cols = ['charges']
+    usecols = cat_cols + num_cols + target_cols
 
     df = pd.read_csv(data_path, usecols=usecols)
-    x = df.drop(targets, axis=1)
-    y = df.get(targets).values
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return {
-        'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-        'categorical_features': categorical_features, 'continuous_features': continuous_features,
-        'task': 'regression', 'n_features': len(categorical_features + continuous_features), 'n_outputs': 1
+        'x_train': x_train, 'y_train': y_train,
+        'x_test': x_test, 'y_test': y_test,
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'reg'
     }
 
 
@@ -204,48 +201,100 @@ def fetch_house_prices(
         fold: data fold number.
 
     Returns:
-        data: it contains the following keys
-            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x is a pandas dataframe and y is a numpy array.
-            - 'categorical_features', 'continuous_features': which features are categorical/continuous.
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
             - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
-            - 'n_features': the number of input features.
-            - 'n_outputs': the number of outputs.
     """
 
     assert 0 <= fold <= 4, 'invalid fold number.'
 
-    data_path = pjoin(path, 'house', 'house_prices.csv')
+    dataset_name = 'house_prices'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, f'{dataset_name}.csv')
     if not pexists(data_path):
-        os.makedirs(pjoin(path, 'house'), exist_ok=True)
-        file_id = "15gTfFGFm3V31xGv5q1wASYtV0wqBmirH"
-        _download_file_from_google_drive(file_id, data_path)
+        os.makedirs(data_dir, exist_ok=True)
+        _download_file_from_google_drive('15gTfFGFm3V31xGv5q1wASYtV0wqBmirH', data_path)
 
-    categorical_features = [
+    cat_cols = [
         'MSSubClass', 'MSZoning', 'Street', 'LotShape', 'LandContour', 'Utilities', 'LotConfig', 'LandSlope',
         'Neighborhood', 'Condition1', 'Condition2', 'BldgType', 'HouseStyle', 'RoofStyle', 'RoofMatl',
         'Exterior1st', 'Exterior2nd', 'ExterQual', 'ExterCond', 'Foundation', 'Heating', 'HeatingQC',
         'CentralAir', 'KitchenQual', 'Functional', 'PavedDrive', 'SaleType', 'SaleCondition'
     ]
-    continuous_features = [
+    num_cols = [
         'LotArea', 'OverallQual', 'OverallCond', 'YearBuilt', 'YearRemodAdd', 'BsmtFinSF1', 'BsmtFinSF2',
         'BsmtUnfSF', 'TotalBsmtSF', '1stFlrSF', '2ndFlrSF', 'LowQualFinSF', 'GrLivArea', 'BsmtFullBath',
         'BsmtHalfBath', 'FullBath', 'HalfBath', 'BedroomAbvGr', 'KitchenAbvGr', 'TotRmsAbvGrd',
         'Fireplaces', 'GarageCars', 'GarageArea', 'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch',
         '3SsnPorch', 'ScreenPorch', 'PoolArea', 'MiscVal', 'MoSold', 'YrSold'
     ]
-    targets = ['SalePrice']
-    usecols = categorical_features + continuous_features + targets
+    target_cols = ['SalePrice']
+    usecols = cat_cols + num_cols + target_cols
 
     df = pd.read_csv(data_path, usecols=usecols)
-    x = df.drop(targets, axis=1)
-    y = df.get(targets).values
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return {
-        'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-        'categorical_features': categorical_features, 'continuous_features': continuous_features,
-        'task': 'regression', 'n_features': len(categorical_features + continuous_features), 'n_outputs': 1
+        'x_train': x_train, 'y_train': y_train,
+        'x_test': x_test, 'y_test': y_test,
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'reg'
+    }
+
+
+def fetch_fico(
+    path: str = './data/',
+    fold: int = 0
+) -> dict:
+    
+    """Download FICO dataset.
+
+    Args:
+        path: where the data should be stored.
+        fold: data fold number.
+
+    Returns:
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
+            - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
+    """
+
+    assert 0 <= fold <= 4, 'invalid fold number.'
+
+    dataset_name = 'fico'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, f'{dataset_name}.csv')
+    if not pexists(data_path):
+        os.makedirs(data_dir, exist_ok=True)
+        _download_file_from_google_drive('16keHIu0OSwi9v-7mlJYdsdyL-GYBetym', data_path)
+
+    cat_cols = None
+    num_cols = [
+        'ExternalRiskEstimate', 'MSinceOldestTradeOpen', 'MSinceMostRecentTradeOpen', 'AverageMInFile', 'NumSatisfactoryTrades',
+        'NumTrades60Ever2DerogPubRec', 'NumTrades90Ever2DerogPubRec', 'PercentTradesNeverDelq', 'MSinceMostRecentDelq',
+        'MaxDelq2PublicRecLast12M', 'MaxDelqEver', 'NumTotalTrades', 'NumTradesOpeninLast12M', 'PercentInstallTrades',
+        'MSinceMostRecentInqexcl7days', 'NumInqLast6M', 'NumInqLast6Mexcl7days', 'NetFractionRevolvingBurden', 'NetFractionInstallBurden',
+        'NumRevolvingTradesWBalance', 'NumInstallTradesWBalance', 'NumBank2NatlTradesWHighUtilization', 'PercentTradesWBalance'
+    ]
+    target_cols = ['RiskPerformance']
+    usecols = num_cols + target_cols
+
+    df = pd.read_csv(data_path, usecols=usecols)
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+    return {
+        'x_train': x_train, 'y_train': y_train,
+        'x_test': x_test, 'y_test': y_test,
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'bincls'
     }
 
 
@@ -261,44 +310,43 @@ def fetch_bikeshare(
         fold: data fold number.
 
     Returns:
-        data: it contains the following keys
-            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x is a pandas dataframe and y is a numpy array.
-            - 'categorical_features', 'continuous_features': which features are categorical/continuous.
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
             - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
-            - 'n_features': the number of input features.
-            - 'n_outputs': the number of outputs.
     """
 
     assert 0 <= fold <= 4, 'invalid fold number.'
 
-    data_path = pjoin(path, 'bikeshare', 'hour.csv')
+    dataset_name = 'bikeshare'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, 'hour.csv')
     if not pexists(data_path):
-        os.makedirs(pjoin(path, 'bikeshare'), exist_ok=True)
-        _download_file_from_onedrive('https://1drv.ms/u/s!ArHmmFHCSXTIg8gDTrnCO2vDulTygA?e=wCHjgF', pjoin(path, 'bikeshare.zip'))
-        with ZipFile(pjoin(path, 'bikeshare.zip'), 'r') as zipObj:
+        os.makedirs(data_dir, exist_ok=True)
+        data_zip_path = pjoin(path, f'{dataset_name}.zip')
+        _download_file_from_onedrive('https://1drv.ms/u/s!ArHmmFHCSXTIg8gDTrnCO2vDulTygA?e=wCHjgF', data_zip_path)
+        with ZipFile(data_zip_path, 'r') as zipObj:
             # Extract all the contents of zip file in current directory
             zipObj.extractall(path)
-        os.remove(pjoin(path, 'bikeshare.zip'))
+        os.remove(data_zip_path)
 
-    categorical_features = None
-    continuous_features = [
-        'season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday', 'weathersit', 'temp', 'atemp',
-        'hum', 'windspeed'
-    ]
-    targets = ['cnt']
-    usecols = continuous_features + targets
+    cat_cols = None
+    num_cols = ['season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday', 'weathersit', 'temp', 'atemp', 'hum', 'windspeed']
+    target_cols = ['cnt']
+    usecols = num_cols + target_cols
 
     df = pd.read_csv(data_path, usecols=usecols)
-    x = df.drop(targets, axis=1)
-    y = df.get(targets).values
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
 
-    train_idx = pd.read_csv(pjoin(path, 'bikeshare', 'train%d.txt' % fold), header=None)[0].values
-    test_idx = pd.read_csv(pjoin(path, 'bikeshare', 'test%d.txt' % fold), header=None)[0].values
+    train_idx = pd.read_csv(pjoin(data_dir, f'train{fold}.txt'), header=None)[0].values
+    test_idx = pd.read_csv(pjoin(data_dir, f'test{fold}.txt'), header=None)[0].values
     
     return {
-        'x_train': x.iloc[train_idx], 'y_train': y[train_idx], 'x_test': x.iloc[test_idx], 'y_test': y[test_idx],
-        'categorical_features': categorical_features, 'continuous_features': continuous_features,
-        'task': 'regression', 'n_features': len(continuous_features), 'n_outputs': 1
+        'x_train': x.iloc[train_idx], 'y_train': y.iloc[train_idx],
+        'x_test': x.iloc[test_idx], 'y_test': y.iloc[test_idx],
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'reg'
     }
 
 
@@ -312,48 +360,271 @@ def fetch_year(
 
     Args:
         path: where the data should be stored.
-        test_size: teset set size.
         fold: data fold number.
 
     Returns:
-        data: it contains the following keys
-            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x is a pandas dataframe and y is a numpy array.
-            - 'categorical_features', 'continuous_features': which features are categorical/continuous.
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
             - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
-            - 'n_features': the number of input features.
-            - 'n_outputs': the number of outputs.
     """
 
     assert 0 <= fold <= 4, 'invalid fold number.'
 
-    path = pjoin(path, 'year')
-
-    data_path = pjoin(path, 'data.csv')
+    dataset_name = 'year'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, 'data.csv')
     if not pexists(data_path):
-        os.makedirs(path, exist_ok=True)
+        os.makedirs(data_dir, exist_ok=True)
         _download('https://www.dropbox.com/s/l09pug0ywaqsy0e/YearPredictionMSD.txt?dl=1', data_path)
     n_features = 91
     types = {i: (np.float32 if i != 0 else np.int32) for i in range(n_features)}
 
-    categorical_features = None
-    continuous_features = list(range(1, n_features))
-    targets = [0]
+    cat_cols = None
+    num_cols = list(range(1, n_features))
+    target_cols = [0]
+    usecols = num_cols + target_cols
 
-    df = pd.read_csv(data_path, header=None, dtype=types)
-    x = df.drop(targets, axis=1)
-    y = df.get(targets).values
+    df = pd.read_csv(data_path, header=None, dtype=types, usecols=usecols)
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
 
     return {
-        'x_train': x.iloc[:-test_size], 'y_train': y[:-test_size], 'x_test': x.iloc[-test_size:], 'y_test': y[-test_size:],
-        'categorical_features': categorical_features, 'continuous_features': continuous_features,
-        'task': 'regression', 'n_features': len(continuous_features), 'n_outputs': 1
+        'x_train': x.iloc[:-test_size], 'y_train': y.iloc[:-test_size],
+        'x_test': x.iloc[-test_size:], 'y_test': y.iloc[-test_size:],
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'reg'
+    }
+
+
+def fetch_credit(
+    path: str = './data/',
+    fold: int = 0
+) -> dict:
+
+    """Download Credit dataset.
+
+    Args:
+        path: where the data should be stored.
+        fold: data fold number.
+
+    Returns:
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
+            - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
+    """
+
+    assert 0 <= fold <= 4, 'invalid fold number.'
+
+    dataset_name = 'credit'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, 'creditcard.csv')
+    if not pexists(data_path):
+        os.makedirs(data_dir, exist_ok=True)
+        data_zip_path = pjoin(path, f'{dataset_name}.zip')
+        _download_file_from_onedrive('https://1drv.ms/u/s!ArHmmFHCSXTIg8d_VZKCFHe7_uNkpw?e=vOSV3S', data_zip_path)
+        with ZipFile(data_zip_path, 'r') as zipObj:
+            # Extract all the contents of zip file in current directory
+            zipObj.extractall(path)
+        os.remove(data_zip_path)
+
+    cat_cols = None
+    num_cols = [
+        'Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14',
+        'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount'
+    ]
+    target_cols = ['Class']
+    usecols = num_cols + target_cols
+
+    df = pd.read_csv(data_path, usecols=usecols)
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
+
+    train_idx = pd.read_csv(pjoin(data_dir, f'train{fold}.txt'), header=None)[0].values
+    test_idx = pd.read_csv(pjoin(data_dir, f'test{fold}.txt'), header=None)[0].values
+    
+    return {
+        'x_train': x.iloc[train_idx], 'y_train': y.iloc[train_idx],
+        'x_test': x.iloc[test_idx], 'y_test': y.iloc[test_idx],
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'bincls'
+    }
+
+
+def fetch_support2(
+    path: str = './data/',
+    fold: int = 0
+) -> dict:
+
+    """Download SUPPORT2 dataset.
+
+    Args:
+        path: where the data should be stored.
+        fold: data fold number.
+
+    Returns:
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
+            - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
+    """
+
+    assert 0 <= fold <= 4, 'invalid fold number.'
+
+    dataset_name = 'support2'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, 'support2.csv')
+    if not pexists(data_path):
+        os.makedirs(data_dir, exist_ok=True)
+        data_zip_path = pjoin(path, f'{dataset_name}.zip')
+        _download_file_from_onedrive('https://1drv.ms/u/s!ArHmmFHCSXTIg8d74X-u6bwQjhJTIA?e=DV7GIK', data_zip_path)
+        with ZipFile(data_zip_path, 'r') as zipObj:
+            # Extract all the contents of zip file in current directory
+            zipObj.extractall(path)
+        os.remove(data_zip_path)
+
+    cat_cols = ['sex', 'dzclass', 'race', 'ca', 'income']
+    num_cols = [
+        'age', 'num.co', 'edu', 'scoma', 'sps', 'hday', 'diabetes', 'dementia', 'meanbp', 'wblc', 'hrt', 'resp',
+        'temp', 'pafi', 'alb', 'bili', 'crea', 'sod', 'ph', 'glucose', 'bun', 'urine', 'adlp', 'adls', 'adlsc'
+    ]
+    target_cols = ['hospdead']
+    usecols = cat_cols + num_cols + target_cols
+
+    df = pd.read_csv(data_path, usecols=usecols)
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
+
+    x[num_cols] = x[num_cols].fillna(0.)
+    x.loc[x['income'].isna(), 'income'] = 'NaN'
+    x.loc[x['income'] == 'under $11k', 'income'] = ' <$11k'
+    x.loc[x['race'].isna(), 'race'] = 'NaN'
+
+    train_idx = pd.read_csv(pjoin(data_dir, f'train{fold}.txt'), header=None)[0].values
+    test_idx = pd.read_csv(pjoin(data_dir, f'test{fold}.txt'), header=None)[0].values
+    
+    return {
+        'x_train': x.iloc[train_idx], 'y_train': y.iloc[train_idx],
+        'x_test': x.iloc[test_idx], 'y_test': y.iloc[test_idx],
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'bincls'
+    }
+
+
+def fetch_mimic3(
+    path: str = './data/',
+    fold: int = 0
+) -> dict:
+
+    """Download MIMIC-III dataset.
+
+    Args:
+        path: where the data should be stored.
+        fold: data fold number.
+
+    Returns:
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
+            - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
+    """
+
+    assert 0 <= fold <= 4, 'invalid fold number.'
+
+    dataset_name = 'mimic3'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, 'adult_icu.gz')
+    if not pexists(data_path):
+        os.makedirs(data_dir, exist_ok=True)
+        data_zip_path = pjoin(path, f'{dataset_name}.zip')
+        _download_file_from_onedrive('https://1drv.ms/u/s!ArHmmFHCSXTIg8d6o6icAULya24iyw?e=s7TNxa', data_zip_path)
+        with ZipFile(data_zip_path, 'r') as zipObj:
+            # Extract all the contents of zip file in current directory
+            zipObj.extractall(path)
+        os.remove(data_zip_path)
+
+    cat_cols = None
+    num_cols = [
+        'age', 'first_hosp_stay', 'first_icu_stay', 'adult_icu', 'eth_asian', 'eth_black', 'eth_hispanic', 'eth_other', 'eth_white',
+        'admType_ELECTIVE', 'admType_EMERGENCY', 'admType_NEWBORN', 'admType_URGENT', 'heartrate_min', 'heartrate_max', 'heartrate_mean',
+        'sysbp_min', 'sysbp_max', 'sysbp_mean', 'diasbp_min', 'diasbp_max', 'diasbp_mean', 'meanbp_min', 'meanbp_max', 'meanbp_mean',
+        'resprate_min', 'resprate_max', 'resprate_mean', 'tempc_min', 'tempc_max', 'tempc_mean', 'spo2_min', 'spo2_max', 'spo2_mean',
+        'glucose_min', 'glucose_max', 'glucose_mean', 'aniongap', 'albumin', 'bicarbonate', 'bilirubin', 'creatinine', 'chloride', 'glucose',
+        'hematocrit', 'hemoglobin', 'lactate', 'magnesium', 'phosphate', 'platelet', 'potassium', 'ptt', 'inr', 'pt', 'sodium', 'bun', 'wbc'
+    ]
+    target_cols = ['mort_icu']
+    usecols = num_cols + target_cols
+
+    df = pd.read_csv(data_path, compression='gzip', usecols=usecols)
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
+
+    train_idx = pd.read_csv(pjoin(data_dir, f'train{fold}.txt'), header=None)[0].values
+    test_idx = pd.read_csv(pjoin(data_dir, f'test{fold}.txt'), header=None)[0].values
+    
+    return {
+        'x_train': x.iloc[train_idx], 'y_train': y.iloc[train_idx],
+        'x_test': x.iloc[test_idx], 'y_test': y.iloc[test_idx],
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'bincls'
+    }
+
+
+def fetch_click(
+    path: str = './data/',
+    test_size: int = 100000,
+    fold: int = 0):
+
+    """Download Click dataset.
+
+    Args:
+        path: where the data should be stored.
+        fold: data fold number.
+
+    Returns:
+        data: it contains the following items
+            - 'x_train', 'y_train', 'x_test', 'y_test': train/test sets. x and y are pandas dataframes.
+            - 'cat_feats', 'num_feats': which features are categorical/numerical.
+            - 'task': which target task type. either 'reg', 'bincls', or 'multicls'.
+    """
+
+    dataset_name = 'click'
+    data_dir = pjoin(path, dataset_name)
+    data_path = pjoin(data_dir, 'click.csv')
+    if not pexists(data_path):
+        os.makedirs(data_dir, exist_ok=True)
+        _download('https://www.dropbox.com/s/w43ylgrl331svqc/click.csv?dl=1', data_path)
+
+    cat_cols = ['url_hash', 'ad_id', 'advertiser_id', 'query_id', 'keyword_id', 'title_id', 'description_id', 'user_id']
+    num_cols = ['impression', 'depth', 'position']
+    target_cols = ['target']
+    usecols = cat_cols + num_cols + target_cols
+
+    df = pd.read_csv(data_path, index_col=0, usecols=usecols)
+    x = df.drop(target_cols, axis=1)
+    y = df.get(target_cols)
+    
+    x_train, x_test = x.iloc[:-test_size].copy(), x.iloc[-test_size:].copy()
+    y_train, y_test = y.iloc[:-test_size].copy(), y.iloc[-test_size:].copy()
+
+    return {
+        'x_train': x_train, 'y_train': y_train,
+        'x_test': x_test, 'y_test': y_test,
+        'cat_feats': cat_cols, 'num_feats': num_cols,
+        'task': 'bincls'
     }
 
 
 DATASET_MAP = {
-    'ca_housing': fetch_ca_housing,
+    'california_housing': fetch_california_housing,
     'insurance': fetch_insurance,
     'house_prices': fetch_house_prices,
+    'fico': fetch_fico,
     'bikeshare': fetch_bikeshare,
-    'year': fetch_year
+    'year': fetch_year,
+    'credit': fetch_credit,
+    'support2': fetch_support2,
+    'mimic3': fetch_mimic3,
+    'click': fetch_click
 }
