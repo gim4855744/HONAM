@@ -12,7 +12,7 @@ from honam.utils import set_global_seed, evaluate
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, choices=DATASETS.keys(), required=True, help='dataset name')
 parser.add_argument('--seed', type=int, required=True, help='random seed, 0<=seed<=4')
-parser.add_argument('--mode', type=str, required=True, choices=['train', 'test'], help='train or test')
+parser.add_argument('--mode', type=str, required=True, choices=['train', 'test', 'interpret'], help='train, test or interpret')
 parser.add_argument('--order', default=2, type=int, help='interaction order, only used for HONAM, HONAMCrossNet, and CrossNet')
 parser.add_argument('--num_workers', default=0, type=int, help='number of workers of dataloader')
 parser.add_argument('--device', default='cpu', type=str, choices=['cpu', 'cuda', 'mps'], help='device name')
@@ -47,12 +47,17 @@ def main():
         hparam = {'n_features': n_features, 'order': args.order, 'task': task, 'ckpt_path': ckpt_path}
         model = HONAM(**hparam).to(args.device)
         model.fit(x_train, y_train, x_val, y_val, num_workers=args.num_workers)
-    else:
+    elif args.mode == 'test':
         checkpoint= torch.load(ckpt_path)
         model = checkpoint['model'].to(args.device)
         model.load_state_dict(checkpoint['state_dict'])
         test_y_hat = model.predict(x_test)
         evaluate(y_test, test_y_hat, task)
+    else:
+        checkpoint= torch.load(ckpt_path)
+        model = checkpoint['model'].to(args.device)
+        model.load_state_dict(checkpoint['state_dict'])
+        model.get_interactions(x_test)
 
 
 if __name__ == '__main__':
