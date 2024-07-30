@@ -25,13 +25,6 @@ class FeatureTransformer:
             x[self._categorical_features] = self._ordinal_encoder.fit_transform(x[self._categorical_features])
             x[self._categorical_features] = self._imputer.fit_transform(x[self._categorical_features])
 
-        # quantile_noise = 1e-3
-        # stds = np.std(x, axis=0, keepdims=True)
-        # noise_std = quantile_noise / np.maximum(stds, quantile_noise)
-        # quantile_x = x + noise_std * np.random.randn(*x.shape)
-        # self._quantile_transformer.fit(quantile_x)
-        # x = self._quantile_transformer.transform(x)
-
         x = self._quantile_transformer.fit_transform(x)
 
         return x
