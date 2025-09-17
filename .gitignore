@@ -130,3 +130,5 @@ dmypy.json
 
 # ItelliJ
 .idea/
+
+.DS_Store
