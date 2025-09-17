@@ -22,8 +22,10 @@ class PyTorchModel(Module):
         }
 
     def fit(self, x_train, y_train, x_val, y_val, num_workers=0):
-
+        
         device = next(self.parameters()).device
+        patience = 100
+        earlystop_count = 0
 
         x_train = torch.tensor(x_train, dtype=torch.float32)
         x_val = torch.tensor(x_val, dtype=torch.float32)
@@ -75,6 +77,11 @@ class PyTorchModel(Module):
                     'state_dict': self.state_dict(),
                 }
                 torch.save(checkpoint, self._ckpt_path)
+                earlystop_count = 0
+            else:
+                earlystop_count += 1
+                if earlystop_count >= patience:
+                    return
 
     def predict(self, x):
 

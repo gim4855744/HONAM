@@ -1,7 +1,5 @@
 import numpy as np
-
 import torch
-
 from torch.nn import Module, ModuleList, Linear, LeakyReLU
 from torch.nn.init import uniform_
 from ._base import PyTorchModel
@@ -11,14 +9,14 @@ __all__ = ['HONAM']
 
 class FeatureNet(Module):
 
-    def __init__(self):
+    def __init__(self, emb_size):
         super().__init__()
         self._layers = ModuleList([
             Linear(1, 32),
             LeakyReLU(),
             Linear(32, 64),
             LeakyReLU(),
-            Linear(64, 32),
+            Linear(64, emb_size),
             LeakyReLU()
         ])
         self.reset_parameters()
@@ -36,11 +34,11 @@ class FeatureNet(Module):
 
 class HONAM(PyTorchModel):
 
-    def __init__(self, n_features, order, task, ckpt_path):
+    def __init__(self, n_features, order, emb_size, task, ckpt_path):
         super().__init__(task, ckpt_path)
         self._order = order
-        self._emb_size = 32  # size of feature vector
-        self._feature_nets = ModuleList([FeatureNet() for _ in range(n_features)])
+        self._emb_size = emb_size
+        self._feature_nets = ModuleList([FeatureNet(emb_size) for _ in range(n_features)])
         self._output_layer = Linear(order * self._emb_size, 1)
 
     def forward(self, x):
@@ -145,3 +143,29 @@ class HONAM(PyTorchModel):
         contributions = np.concatenate(contributions, axis=1)
         
         return contributions, names
+    
+    def find_important_interactions(self, x):
+
+        n_features = x.shape[1]
+        importances = []
+        names = []
+
+        def _find_important_interactions(start_idx, items=[]):
+
+            if len(items) > self._order:
+                return
+            
+            importances.append(np.abs(self.interpret(x, *items)))
+            names.append('-'.join(map(str, items)))
+
+            for i in range(start_idx, n_features):
+                _find_important_interactions(i + 1, items + [i])
+
+        for i in range(n_features):
+            _find_important_interactions(start_idx=i + 1, items=[i])
+
+        importances = np.concatenate(importances, axis=1).sum(axis=0)
+        v  = zip(importances, names)
+        importances, names = zip(*sorted(v, reverse=True))
+
+        return importances, names

@@ -20,15 +20,36 @@ We have implemented the code in the following python environment:
 
 We provide an example code.
 
-For training:
+### Training
 ```shell
-python run.py --mode=train --dataset=house --seed=0
+python run.py --dataset=<dataset name> --mode=train --seed=<random seed>
 ```
 
-For test:
+### Test
 ```shell
-python run.py --mode=test --dataset=house --seed=0
+python run.py --dataset=<dataset name> --mode=test --seed=<random seed>
 ```
+
+### Interpretation
+```shell
+python run.py --dataset=<dataset name> --mode=interpret --seed=<random seed>
+```
+This command will draw local/global first- and second-order interpretations and save them to `interpretations` directory.
+
+## Datasets
+The ```run.py``` will automatically downloads the following datasets.
+
+Dataset list:
+- cahousing (California Housing)
+- insurance (Insurance)
+- house (House Prices)
+- bikeshare (Bikeshare)
+- year (Year)
+- fico (FICO)
+- credit (Credit)
+- support2 (SUPPORT2)
+- mimic3 (MIMIC-III)
+- click (Click)
 
 ## Using HONAM in Your Code
 

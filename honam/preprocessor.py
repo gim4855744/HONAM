@@ -12,9 +12,10 @@ class FeatureTransformer:
 
         self._categorical_features = categorical_features
 
+        self._cat_imputer = SimpleImputer(strategy='most_frequent', copy=False)
         self._ordinal_encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=np.nan)
-        self._imputer = SimpleImputer(strategy='most_frequent', copy=False)
         
+        self._num_imputer = SimpleImputer()
         self._quantile_transformer = QuantileTransformer(output_distribution='uniform', copy=False)
 
     def fit_transform(self, x):
@@ -22,9 +23,10 @@ class FeatureTransformer:
         x = x.copy()
 
         if self._categorical_features is not None:
+            x[self._categorical_features] = self._cat_imputer.fit_transform(x[self._categorical_features])
             x[self._categorical_features] = self._ordinal_encoder.fit_transform(x[self._categorical_features])
-            x[self._categorical_features] = self._imputer.fit_transform(x[self._categorical_features])
 
+        x = self._num_imputer.fit_transform(x)
         x = self._quantile_transformer.fit_transform(x)
 
         return x
@@ -34,9 +36,10 @@ class FeatureTransformer:
         x = x.copy()
 
         if self._categorical_features is not None:
+            x[self._categorical_features] = self._cat_imputer.transform(x[self._categorical_features])
             x[self._categorical_features] = self._ordinal_encoder.transform(x[self._categorical_features])
-            x[self._categorical_features] = self._imputer.transform(x[self._categorical_features])
             
+        x = self._num_imputer.transform(x)
         x = self._quantile_transformer.transform(x)
 
         return x

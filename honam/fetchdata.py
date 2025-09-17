@@ -1118,24 +1118,6 @@ def fetch_SARCOS(path='./data/', fold=0, target_id=None):
 
 def fetch_fico(path='./data/', fold=0):
 
-    """Download FICO dataset.
-
-    Args:
-        path: Where the data should be stored.
-        fold: Data fold.
-
-    Returns:
-        data (dict): It contains the following keys::
-            - 'X_train', 'y_train', 'X_test', 'y_test':
-                Train/val/test sets. X is apandas dataframe and y is a numpy array.
-            - 'problem':
-                Which problem type. Either 'classification' or 'regression'.
-            - 'cat_features':
-                Which features are categorical.
-    """
-
-    assert 0 <= fold <= 4, 'fold is only allowed btw 0 and 4, but get %d' % fold
-
     data_path = pjoin(path, 'fico', 'fico.csv')
     if not pexists(data_path):
         os.makedirs(pjoin(path, 'fico'), exist_ok=True)
@@ -1162,22 +1144,6 @@ def fetch_fico(path='./data/', fold=0):
 
 def fetch_insurance(path='./data/', fold=0):
 
-    """Download Insurance dataset.
-
-    Args:
-        path: Where the data should be stored.
-        fold: Data fold.
-
-    Returns:
-        data (dict): It contains the following keys::
-            - 'X_train', 'y_train', 'X_test', 'y_test':
-                Train/val/test sets. X is apandas dataframe and y is a numpy array.
-            - 'problem':
-                Which problem type. Either 'classification' or 'regression'.
-            - 'cat_features':
-                Which features are categorical.
-    """
-
     data_path = pjoin(path, 'insurance', 'insurance.csv')
     if not pexists(data_path):
         os.makedirs(pjoin(path, 'insurance'), exist_ok=True)
@@ -1202,22 +1168,6 @@ def fetch_insurance(path='./data/', fold=0):
 
 
 def fetch_house_prices(path='./data/', fold=0):
-
-    """Download House Prices dataset.
-
-    Args:
-        path: Where the data should be stored.
-        fold: Data fold.
-
-    Returns:
-        data (dict): It contains the following keys::
-            - 'X_train', 'y_train', 'X_test', 'y_test':
-                Train/val/test sets. X is apandas dataframe and y is a numpy array.
-            - 'problem':
-                Which problem type. Either 'classification' or 'regression'.
-            - 'cat_features':
-                Which features are categorical.
-    """
 
     data_path = pjoin(path, 'house', 'house_prices.csv')
     if not pexists(data_path):
@@ -1248,22 +1198,6 @@ def fetch_house_prices(path='./data/', fold=0):
 
 
 def fetch_ca_housing(path='./data/', fold=0):
-
-    """Download California Housing dataset.
-
-    Args:
-        path: Where the data should be stored.
-        fold: Data fold.
-
-    Returns:
-        data (dict): It contains the following keys::
-            - 'X_train', 'y_train', 'X_test', 'y_test':
-                Train/val/test sets. X is apandas dataframe and y is a numpy array.
-            - 'problem':
-                Which problem type. Either 'classification' or 'regression'.
-            - 'cat_features':
-                Which features are categorical.
-    """
 
     data_path = pjoin(path, 'cahousing', 'california_housing_prices.csv')
     if not pexists(data_path):
